@@ -1,4 +1,4 @@
-﻿.venv/
+.venv/
 agent/.venv/
 __pycache__/
 .pytest_cache/
@@ -9,7 +9,7 @@ agent/.env
 
 .claude/*
 !.claude/hooks.json
-CLAUDE.md
+# CLAUDE.md — tracked in VD088 fork (upstream ignores it)
 .vscode/
 learn-claude-code-main/
 agent/sessions/

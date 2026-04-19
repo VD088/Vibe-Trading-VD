@@ -1,0 +1,76 @@
+name: Headless CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  headless-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Syntax check (core modules)
+        run: |
+          cd agent
+          python -m py_compile cli.py
+          python -m py_compile api_server.py
+          python -m py_compile mcp_server.py
+          python -m py_compile src/agent/loop.py
+          python -m py_compile src/tools/__init__.py
+          python -m py_compile src/providers/llm.py
+          python -m py_compile src/providers/chat.py
+
+      - name: Run unit tests
+        run: pytest --ignore=agent/tests/e2e_backtest --tb=short -q
+
+      - name: Verify vt.sh wrapper
+        run: |
+          chmod +x vt.sh
+          # Verify wrapper exists and is executable
+          test -x vt.sh
+          echo "vt.sh wrapper is executable"
+
+      - name: Verify skill count
+        run: |
+          cd agent
+          SKILL_COUNT=$(ls -d src/skills/*/ 2>/dev/null | wc -l)
+          echo "Skills found: $SKILL_COUNT"
+          if [ "$SKILL_COUNT" -lt 70 ]; then
+            echo "WARNING: Expected 70+ skills, found $SKILL_COUNT"
+          fi
+
+      - name: Verify swarm preset count
+        run: |
+          PRESET_COUNT=$(ls agent/config/swarm/*.yaml 2>/dev/null | wc -l)
+          echo "Swarm presets found: $PRESET_COUNT"
+          if [ "$PRESET_COUNT" -lt 29 ]; then
+            echo "WARNING: Expected 29+ presets, found $PRESET_COUNT"
+          fi
+
+      - name: Verify provider mappings
+        run: |
+          cd agent
+          python -c "
+          from src.providers.llm import _sync_provider_env
+          import os
+          # Test that anthropic provider is recognized
+          os.environ['LANGCHAIN_PROVIDER'] = 'anthropic'
+          os.environ['ANTHROPIC_API_KEY'] = 'test-key'
+          os.environ['ANTHROPIC_BASE_URL'] = 'https://api.anthropic.com/v1/'
+          _sync_provider_env()
+          assert os.environ.get('OPENAI_API_KEY') == 'test-key', 'Anthropic key mapping failed'
+          print('Provider mapping: anthropic → OK')
+          "

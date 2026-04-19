@@ -123,6 +123,7 @@ def _sync_provider_env() -> None:
         "minimax":    ("MINIMAX_API_KEY",     "MINIMAX_BASE_URL"),
         "mimo":       ("MIMO_API_KEY",        "MIMO_BASE_URL"),
         "zai":        ("ZAI_API_KEY",         "ZAI_BASE_URL"),
+        "anthropic":  ("ANTHROPIC_API_KEY",    "ANTHROPIC_BASE_URL"),
         "ollama":     (None,                  "OLLAMA_BASE_URL"),
     }
 

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "vibe-trading": {
+      "command": "/Users/vd8/Documents/Claude/Trading/Vibe-Trading/agent/.venv/bin/python",
+      "args": ["-m", "mcp_server"],
+      "cwd": "/Users/vd8/Documents/Claude/Trading/Vibe-Trading/agent",
+      "env": {
+        "LANGCHAIN_PROVIDER": "gemini",
+        "LANGCHAIN_MODEL_NAME": "gemini-2.5-flash"
+      }
+    }
+  }
+}
